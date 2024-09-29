@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>UPI Payment Link Generator</title>
+    
+    <!-- Adding Noto Sans Gujarati for proper rendering of "શ્રી" -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati&display=swap" rel="stylesheet">
+    
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Noto Sans Gujarati', sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 20px;
@@ -78,16 +83,16 @@
             cursor: pointer;
         }
 
-        /* Center elements after generating the link */
         .centered {
             text-align: center;
         }
 
-        /* Hide elements */
         .hidden {
             display: none;
         }
     </style>
+
+    <!-- Including jQuery and QR Code plugin -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
 </head>
@@ -96,7 +101,7 @@
         <h1>UPI Payment Link Generator</h1>
         <form id="upiForm">
             <label for="upiId">UPI ID:</label>
-            <input type="text" id="upiId" value="9426499188@okbizaxis" readonly>
+            <input type="text" id="upiId" readonly>
 
             <label for="amount">Amount:</label>
             <input type="number" id="amount" placeholder="Enter amount" required>
@@ -106,15 +111,24 @@
 
             <button type="submit">Generate Payment Link</button>
         </form>
+        
         <div id="result" class="centered"></div>
         <div id="qrCode" class="centered"></div>
-        <div class="share-buttons centered" id="shareSection" style="display: none;">
+        
+        <div class="share-buttons centered hidden" id="shareSection">
             <button class="share-button" id="copyLink">Copy Link</button>
             <button class="share-button" id="shareWhatsApp">Share on WhatsApp</button>
         </div>
     </div>
 
     <script>
+        // Pre-fill the form fields when the page loads
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById('upiId').value = "9426499188@okbizaxis";
+            document.getElementById('name').value = "શ્રી";
+            document.getElementById('amount').value = 100; // Example pre-filled amount
+        });
+
         // Function to generate payment link and QR code
         function generatePaymentLink(upiId, amount, name) {
             const paymentLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
@@ -132,13 +146,9 @@
                 height: 128
             });
 
-            // Show share buttons
-            document.getElementById('shareSection').style.display = 'flex';
-
-            // Hide the form after generating the payment link
+            document.getElementById('shareSection').classList.remove('hidden');
             document.getElementById('upiForm').classList.add('hidden');
 
-            // Copy link functionality
             const currentDomain = window.location.origin;
             const shareableLink = `${currentDomain}${window.location.pathname}?amount=${amount}&name=${encodeURIComponent(name)}`;
 
@@ -148,17 +158,16 @@
                 });
             };
 
-            // Share on WhatsApp
             document.getElementById('shareWhatsApp').onclick = () => {
                 window.open(`https://wa.me/?text=Pay+₹${amount}+to+${encodeURIComponent(name)}+using+this+link%3A+${encodeURIComponent(shareableLink)}`, '_blank');
             };
         }
 
-        // Form submit event
-        document.getElementById('upiForm').addEventListener('submit', function(event) {
+        // Form submit event handler
+        document.getElementById('upiForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
-            const upiId = '9426499188@okbizaxis'; // Fixed UPI ID
+            const upiId = document.getElementById('upiId').value;
             const amount = document.getElementById('amount').value;
             const name = document.getElementById('name').value.trim();
 
