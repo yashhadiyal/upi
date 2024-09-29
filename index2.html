@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom UPI Payment Link Generator</title>
+    <title>UPI Payment Link Generator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,7 +40,7 @@
         }
 
         input[readonly] {
-            background-color: #f4f4f4;
+            background-color: #e9e9e9;
         }
 
         button {
@@ -57,29 +57,9 @@
             background-color: #7EC6E1;
         }
 
-        #result {
+        #result, #qrCode {
             margin-top: 20px;
             text-align: center;
-        }
-
-        #qrCodeContainer {
-            margin-top: 20px;
-            text-align: center;
-            position: relative;
-            display: inline-block;
-        }
-
-        .qr-center-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 20px;
-            font-weight: bold;
-            color: black;
-            background-color: white;
-            padding: 2px 5px;
-            border-radius: 5px;
         }
 
         .share-buttons {
@@ -97,6 +77,16 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
+        /* Center elements after generating the link */
+        .centered {
+            text-align: center;
+        }
+
+        /* Hide elements */
+        .hidden {
+            display: none;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
@@ -109,45 +99,33 @@
             <input type="text" id="upiId" value="9426499188@okbizaxis" readonly>
 
             <label for="amount">Amount:</label>
-            <input type="number" id="amount" placeholder="100" required>
+            <input type="number" id="amount" placeholder="Enter amount" required>
 
             <label for="name">Your Name:</label>
             <input type="text" id="name" placeholder="Your Name" required>
 
             <button type="submit">Generate Payment Link</button>
         </form>
-        <div id="result"></div>
-
-        <div id="qrCodeContainer">
-            <div id="qrCode"></div>
-            <div class="qr-center-text">શ્રી</div>
-        </div>
-
-        <div class="share-buttons" id="shareSection" style="display: none;">
+        <div id="result" class="centered"></div>
+        <div id="qrCode" class="centered"></div>
+        <div class="share-buttons centered" id="shareSection" style="display: none;">
             <button class="share-button" id="copyLink">Copy Link</button>
             <button class="share-button" id="shareWhatsApp">Share on WhatsApp</button>
         </div>
     </div>
 
     <script>
-        document.getElementById('upiForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const upiId = "9426499188@okbizaxis"; // UPI ID is hardcoded to prevent changes
-            const amount = document.getElementById('amount').value;
-            const name = document.getElementById('name').value;
-
-            // Generate UPI payment link
+        // Function to generate payment link and QR code
+        function generatePaymentLink(upiId, amount, name) {
             const paymentLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
 
-            // Detect domain and generate a sharable link
-            const currentDomain = window.location.origin;
-            const shareableLink = `${currentDomain}${window.location.pathname}?upiId=${upiId}&name=${encodeURIComponent(name)}&amount=${amount}`;
+            document.getElementById('result').innerHTML = `
+                <a href="${paymentLink}" target="_blank">
+                    <button>Click here to pay ₹${amount}</button>
+                </a>
+            `;
 
-            document.getElementById('result').innerHTML = `<a href="${paymentLink}" target="_blank"><button>Click here to pay ₹${amount}</button></a>`;
-
-            // Clear previous QR code
             $('#qrCode').empty();
-            // Generate new QR code
             $('#qrCode').qrcode({
                 text: paymentLink,
                 width: 128,
@@ -157,7 +135,13 @@
             // Show share buttons
             document.getElementById('shareSection').style.display = 'flex';
 
+            // Hide the form after generating the payment link
+            document.getElementById('upiForm').classList.add('hidden');
+
             // Copy link functionality
+            const currentDomain = window.location.origin;
+            const shareableLink = `${currentDomain}${window.location.pathname}?amount=${amount}&name=${encodeURIComponent(name)}`;
+
             document.getElementById('copyLink').onclick = () => {
                 navigator.clipboard.writeText(shareableLink).then(() => {
                     alert('Payment link copied to clipboard!');
@@ -166,8 +150,24 @@
 
             // Share on WhatsApp
             document.getElementById('shareWhatsApp').onclick = () => {
-                window.open(`https://wa.me/?text=Pay+₹${amount}+to+${name}+using+this+link%3A+${encodeURIComponent(shareableLink)}`, '_blank');
+                window.open(`https://wa.me/?text=Pay+₹${amount}+to+${encodeURIComponent(name)}+using+this+link%3A+${encodeURIComponent(shareableLink)}`, '_blank');
             };
+        }
+
+        // Form submit event
+        document.getElementById('upiForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const upiId = '9426499188@okbizaxis'; // Fixed UPI ID
+            const amount = document.getElementById('amount').value;
+            const name = document.getElementById('name').value.trim();
+
+            if (!amount || !name) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+
+            generatePaymentLink(upiId, amount, name);
         });
     </script>
 </body>
