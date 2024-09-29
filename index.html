@@ -39,6 +39,10 @@
             border-radius: 4px;
         }
 
+        input[readonly] {
+            background-color: #e9e9e9; /* Gray background to indicate it's non-editable */
+        }
+
         button {
             width: 100%;
             padding: 10px;
@@ -87,6 +91,7 @@
         <h1>UPI Payment Link Generator</h1>
         <form id="upiForm">
             <label for="upiId">UPI ID:</label>
+            <!-- Hard-coded UPI ID, non-editable -->
             <input type="text" id="upiId" value="9426499188@okbizaxis" readonly>
 
             <label for="amount">Amount:</label>
@@ -106,27 +111,25 @@
     </div>
 
     <script>
-        // Function to get URL parameters
+        // Function to get URL parameters, but we'll ignore the upiId parameter
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
             return {
-                upiId: params.get('upiId'),
                 amount: params.get('amount'),
                 name: params.get('name')
             };
         }
 
-        // Populate form fields with URL parameters if available
+        // Populate form fields with URL parameters if available (except UPI ID)
         window.onload = function() {
             const urlParams = getUrlParams();
 
-            if (urlParams.upiId && urlParams.amount && urlParams.name) {
-                document.getElementById('upiId').value = urlParams.upiId;
+            if (urlParams.amount && urlParams.name) {
                 document.getElementById('amount').value = urlParams.amount;
                 document.getElementById('name').value = decodeURIComponent(urlParams.name);
 
                 // Automatically generate payment link and QR code
-                generatePaymentLink(urlParams.upiId, urlParams.amount, urlParams.name);
+                generatePaymentLink('9426499188@okbizaxis', urlParams.amount, urlParams.name);
             }
         };
 
@@ -151,7 +154,7 @@
 
             // Copy link functionality
             const currentDomain = window.location.origin;
-            const shareableLink = `${currentDomain}${window.location.pathname}?upiId=${upiId}&name=${encodeURIComponent(name)}&amount=${amount}`;
+            const shareableLink = `${currentDomain}${window.location.pathname}?amount=${amount}&name=${encodeURIComponent(name)}`;
 
             document.getElementById('copyLink').onclick = () => {
                 navigator.clipboard.writeText(shareableLink).then(() => {
@@ -169,7 +172,7 @@
         document.getElementById('upiForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const upiId = document.getElementById('upiId').value;
+            const upiId = '9426499188@okbizaxis'; // Fixed UPI ID
             const amount = document.getElementById('amount').value;
             const name = document.getElementById('name').value.trim();
 
