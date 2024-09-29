@@ -106,44 +106,53 @@
     </div>
 
     <script>
-        document.getElementById('upiForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const upiId = document.getElementById('upiId').value;
-            const amount = document.getElementById('amount').value;
-            const name = document.getElementById('name').value.trim();
+        // Function to get URL parameters
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                upiId: params.get('upiId'),
+                amount: params.get('amount'),
+                name: params.get('name')
+            };
+        }
 
-            if (!amount || !name) {
-                alert("Please fill in all required fields.");
-                return;
+        // Populate form fields with URL parameters if available
+        window.onload = function() {
+            const urlParams = getUrlParams();
+
+            if (urlParams.upiId && urlParams.amount && urlParams.name) {
+                document.getElementById('upiId').value = urlParams.upiId;
+                document.getElementById('amount').value = urlParams.amount;
+                document.getElementById('name').value = decodeURIComponent(urlParams.name);
+
+                // Automatically generate payment link and QR code
+                generatePaymentLink(urlParams.upiId, urlParams.amount, urlParams.name);
             }
+        };
 
-            // Generate UPI payment link
+        // Function to generate payment link and QR code
+        function generatePaymentLink(upiId, amount, name) {
             const paymentLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
-            
-            // Auto-detect domain for sharable link
-            const currentDomain = window.location.origin; 
-            const shareableLink = `${currentDomain}${window.location.pathname}?upiId=${upiId}&name=${encodeURIComponent(name)}&amount=${amount}`;
-            
+
             document.getElementById('result').innerHTML = `
                 <a href="${paymentLink}" target="_blank">
                     <button>Click here to pay ₹${amount}</button>
                 </a>
             `;
 
-            // Clear previous QR code
             $('#qrCode').empty();
-            // Generate new QR code
             $('#qrCode').qrcode({
                 text: paymentLink,
                 width: 128,
                 height: 128
             });
 
-            // Show share buttons
             document.getElementById('shareSection').style.display = 'flex';
 
             // Copy link functionality
+            const currentDomain = window.location.origin;
+            const shareableLink = `${currentDomain}${window.location.pathname}?upiId=${upiId}&name=${encodeURIComponent(name)}&amount=${amount}`;
+
             document.getElementById('copyLink').onclick = () => {
                 navigator.clipboard.writeText(shareableLink).then(() => {
                     alert('Payment link copied to clipboard!');
@@ -154,6 +163,22 @@
             document.getElementById('shareWhatsApp').onclick = () => {
                 window.open(`https://wa.me/?text=Pay+₹${amount}+to+${encodeURIComponent(name)}+using+this+link%3A+${encodeURIComponent(shareableLink)}`, '_blank');
             };
+        }
+
+        // Form submit event
+        document.getElementById('upiForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const upiId = document.getElementById('upiId').value;
+            const amount = document.getElementById('amount').value;
+            const name = document.getElementById('name').value.trim();
+
+            if (!amount || !name) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+
+            generatePaymentLink(upiId, amount, name);
         });
     </script>
 </body>
